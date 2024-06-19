@@ -76,7 +76,7 @@ def main():
     
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
-    # font = pg.font.Font(None, 80)  # フォントサイズの設定
+    
 
     # ゲームのループ
     while True:
