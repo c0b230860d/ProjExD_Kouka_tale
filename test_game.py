@@ -2,6 +2,8 @@ import os
 import sys
 import pygame as pg
 from pygame.locals import *
+import pygame.mixer
+import time
 
 
 WIDTH, HEIGHT = 1024, 768 # ディスプレイサイズ
@@ -49,8 +51,26 @@ def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect):
     if check_bound(hurt_rect) != (True, True):
         hurt_rect.move_ip(-sum_mv[0], -sum_mv[1])
     screen.blit(hurt_img, hurt_rect)
-    
 
+
+def sound():
+    """
+    引数：なし
+    戻り値：なし
+    Megalovaniaを流す
+    """
+    pygame.mixer.init()  # 初期化
+
+    pygame.mixer.music.load("./sound/Megalovania.mp3")
+
+    pygame.mixer.music.play(1)
+
+    # time.sleep(30)
+
+    # pygame.mixer.music.stop()
+
+    return 
+    
 
 def main():
     # ゲームの初期化
@@ -77,6 +97,7 @@ def main():
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
     # font = pg.font.Font(None, 80)  # フォントサイズの設定
+    sound()  # Megalovaniaを流す
 
     # ゲームのループ
     while True:
