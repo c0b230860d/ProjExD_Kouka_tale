@@ -28,6 +28,8 @@ def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+
+
 def main():
     # ゲームの初期化
     pg.display.set_caption("Kouka tale")  # 画面タイトル設定
@@ -39,9 +41,16 @@ def main():
         pg.image.load("fig/Undertale_hurt.png"), 
         0, 0.02
         ) 
-    hurt_img = pg.transform.flip(hurt_img, True, False)
     hurt_rect = hurt_img.get_rect()
     hurt_rect.center = WIDTH/2, 3*HEIGHT/4  #画像の中心座標を設定
+
+    # dotこうかとんの読み込み
+    kk_img = pg.transform.rotozoom(
+        pg.image.load("fig/dot_kk_negate.png"),
+        0,1.5
+    )
+    kk_rect = kk_img.get_rect()
+    kk_rect.center = WIDTH/2, HEIGHT/4
     
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
@@ -53,6 +62,8 @@ def main():
             if event.type == pg.QUIT:
                 return       
         screen.fill((0, 0, 0))  # 画面の色を指定（背景画像があるときは不要）
+
+        screen.blit(kk_img, kk_rect)
 
         # ハートの動ける範囲
         pg.draw.rect(screen,(255,255,255), Rect(WIDTH/3, HEIGHT/3+100, WIDTH/3, HEIGHT/2.5), 10)
