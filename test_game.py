@@ -6,10 +6,10 @@ from pygame.locals import *
 
 WIDTH, HEIGHT = 1024, 768 # ディスプレイサイズ
 DELTA = {  # 移動量辞書
-    pg.K_UP:(0, -5), 
-    pg.K_DOWN:(0, 5), 
-    pg.K_LEFT:(-5, 0), 
-    pg.K_RIGHT:(5, 0),
+    pg.K_UP:(0, -1), 
+    pg.K_DOWN:(0, 1), 
+    pg.K_LEFT:(-1, 0), 
+    pg.K_RIGHT:(1, 0),
     }
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,7 +27,29 @@ def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
         tate = False
     return yoko, tate
 
+def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect):
+    """
+    引数:スクリーン
+    戻り値:なし
+    こうかとんとの先頭画面を表示する
+    """
+    screen.blit(kk_img, kk_rect)
 
+    # ハートの動ける範囲
+    pg.draw.rect(screen,(255,255,255), Rect(WIDTH/3, HEIGHT/3+100, WIDTH/3, HEIGHT/2.5), 10)
+
+    #キーボード操作
+    sum_mv = [0, 0]
+    key_lst = pg.key.get_pressed()  # キーが押されているか？
+    for k, v in DELTA.items():
+        if key_lst[k]:
+            sum_mv[0] += v[0]
+            sum_mv[1] += v[1]
+    hurt_rect.move_ip(sum_mv)
+    if check_bound(hurt_rect) != (True, True):
+        hurt_rect.move_ip(-sum_mv[0], -sum_mv[1])
+    screen.blit(hurt_img, hurt_rect)
+    
 
 
 def main():
@@ -63,22 +85,7 @@ def main():
                 return       
         screen.fill((0, 0, 0))  # 画面の色を指定（背景画像があるときは不要）
 
-        screen.blit(kk_img, kk_rect)
-
-        # ハートの動ける範囲
-        pg.draw.rect(screen,(255,255,255), Rect(WIDTH/3, HEIGHT/3+100, WIDTH/3, HEIGHT/2.5), 10)
-    
-        #キーボード操作
-        sum_mv = [0, 0]
-        key_lst = pg.key.get_pressed()  # キーが押されているか？
-        for k, v in DELTA.items():
-            if key_lst[k]:
-                sum_mv[0] += v[0]
-                sum_mv[1] += v[1]
-        hurt_rect.move_ip(sum_mv)
-        if check_bound(hurt_rect) != (True, True):
-            hurt_rect.move_ip(-sum_mv[0], -sum_mv[1])
-        screen.blit(hurt_img, hurt_rect)
+        attack_kk(screen,kk_img,kk_rect,hurt_img,hurt_rect)
 
         pg.display.update()  # ディスプレイを更新する
         tmr += 1  # 1フレーム事にタイマーに1加える
