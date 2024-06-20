@@ -13,6 +13,7 @@ DELTA = {  # 移動量辞書
     pg.K_LEFT:(-1, 0), 
     pg.K_RIGHT:(1, 0),
     }
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -30,11 +31,16 @@ def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
-def start_game(screen):
+def start_game(screen)->None:
     """
-    引数：
-    戻り値：
+    引数：screen
+    戻り値：なし
+    ゲームのスタート画面を表示する
     """
+    pygame.mixer.init()
+    sound = pygame.mixer.Sound("./sound/menu1.mp3")
+    sound.play(-1)
+
     logo_img = pg.transform.rotozoom(
         pg.image.load("fig/KouKAtale-2024-6-19.png"), 
         0, 1
@@ -48,13 +54,19 @@ def start_game(screen):
 
     font = pg.font.Font(None, 50)  # フォント設定   
     txt = font.render("Please press the Enter Key", True, (255, 255, 255))
-    screen.blit(txt, [WIDTH/2-200, HEIGHT/2+70])
+    txt_rect = txt.get_rect(center=(WIDTH/2, 2*HEIGHT/3))
+    screen.blit(txt, txt_rect)
     pg.display.update()
-    key_lst = pg.key.get_pressed()
-    # print(key_lst)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    sound.stop()
+                    return
+        # print(key_lst)
     
 
-def attack_kk_sound():
+def attack_kk_sound()->None:
     """
     引数：なし
     戻り値：なし
@@ -70,6 +82,7 @@ def attack_kk_sound():
     
     # time.sleep(5)
     
+    # とっくさん遊びゾーン
     # now_volume = sound.get_volume()
     # for i in range(40):
     #     sound.set_volume(now_volume/5)
@@ -82,9 +95,9 @@ def attack_kk_sound():
 
     return 
 
-def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect):
+def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect)->None:
     """
-    引数:スクリーン
+    引数:screen, kk_img, kk_rect, hurt, hurt_rect
     戻り値:なし
     こうかとんとの戦闘画面を表示する
     """
@@ -105,6 +118,7 @@ def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect):
     if check_bound(hurt_rect) != (True, True):
         hurt_rect.move_ip(-sum_mv[0], -sum_mv[1])
     screen.blit(hurt_img, hurt_rect)
+
 
 def main():
     # ゲームの初期化
