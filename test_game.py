@@ -2,6 +2,8 @@ import os
 import sys
 import pygame as pg
 from pygame.locals import *
+import pygame.mixer
+import time
 
 
 WIDTH, HEIGHT = 1024, 768 # ディスプレイサイズ
@@ -27,12 +29,66 @@ def check_bound(obj_rct:pg.Rect) -> tuple[bool, bool]:
         tate = False
     return yoko, tate
 
+
+def start_game(screen):
+    """
+    引数：
+    戻り値：
+    """
+    logo_img = pg.transform.rotozoom(
+        pg.image.load("fig/KouKAtale-2024-6-19.png"), 
+        0, 1
+        ) 
+    logo_rect = logo_img.get_rect()
+    logo_rect.center = WIDTH/2, HEIGHT/2
+    screen.blit(logo_img, logo_rect)
+
+    pg.display.update()
+    time.sleep(3)
+
+    font = pg.font.Font(None, 50)  # フォント設定   
+    txt = font.render("Please press the Enter Key", True, (255, 255, 255))
+    screen.blit(txt, [WIDTH/2-200, HEIGHT/2+70])
+    pg.display.update()
+    key_lst = pg.key.get_pressed()
+    # print(key_lst)
+    
+
+def attack_kk_sound():
+    """
+    引数：なし
+    戻り値：なし
+    Megalovaniaを流す
+    """
+    pygame.mixer.init()  # 初期化
+    
+    # sound = pygame.mixer.Sound("./sound/Chipi_Chipi_Chapa_Chapa.mp3")
+    # sound.play()
+
+    sound = pygame.mixer.Sound("./sound/Megalovania.mp3")
+    sound.play()
+    
+    # time.sleep(5)
+    
+    # now_volume = sound.get_volume()
+    # for i in range(40):
+    #     sound.set_volume(now_volume/5)
+    #     time.sleep(0.1)
+    #     sound.set_volume(now_volume)
+    #     time.sleep(0.1)
+    # sound.fadeout(5000)
+    # pygame.mixer.music.stop()
+    # sound.stop()
+
+    return 
+
 def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect):
     """
     引数:スクリーン
     戻り値:なし
-    こうかとんとの先頭画面を表示する
+    こうかとんとの戦闘画面を表示する
     """
+    
     screen.blit(kk_img, kk_rect)
 
     # ハートの動ける範囲
@@ -49,8 +105,6 @@ def attack_kk(screen, kk_img, kk_rect, hurt_img, hurt_rect):
     if check_bound(hurt_rect) != (True, True):
         hurt_rect.move_ip(-sum_mv[0], -sum_mv[1])
     screen.blit(hurt_img, hurt_rect)
-    
-
 
 def main():
     # ゲームの初期化
@@ -77,13 +131,18 @@ def main():
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
     
+    # start画面の表示
+    start_game(screen)
 
+    attack_kk_sound()  # Megalovaniaを流す
+    
     # ゲームのループ
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return       
         screen.fill((0, 0, 0))  # 画面の色を指定（背景画像があるときは不要）
+        
 
         attack_kk(screen,kk_img,kk_rect,hurt_img,hurt_rect)
 
