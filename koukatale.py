@@ -167,7 +167,10 @@ class HealthBar:
 def main():
     pg.display.set_caption("koukAtale")
     screen = pg.display.set_mode((WIDTH, HEIGHT))   
-    #こうかとんの初期化
+    # シーン状態の推移
+    gameschange = 0  # 0：選択画面, 1：攻撃
+
+    # こうかとんの初期化
     kkton = Koukaton()
 
     # ハートの初期化
@@ -179,7 +182,8 @@ def main():
     hp =HealthBar(WIDTH/3, 5*HEIGHT/6, 100, 96, random.uniform(1, 4)) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
-    tmr = 0  # タイマーの初期値
+    select_tmr = 0  # 選択画面時のタイマーの初期値
+    attack_tmr = 0  # 攻撃中のタイマーの初期値
 
     pygame.mixer.init()
     sound = pygame.mixer.Sound("./sound/Megalovania.mp3")
@@ -192,37 +196,51 @@ def main():
         
         # 背景関連
         screen.fill((0,0,0))
-        pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
+        if gameschange == 0:
+            attack_tmr = 0
+            pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 10)
+            kkton.update(screen)
+            hp.draw(screen)
+            hp.update()
+            if select_tmr > 100:
+                gameschange = 1
+            select_tmr += 1
 
-        # 落単ビームの発生 
-        if tmr % 7 == 0:  # 一定時間ごとにビームを生成
-            start_pos = (random.randint(WIDTH/2-100,WIDTH/2+100), 40)
-            beams.append(AttackBeam((255, 255, 255), start_pos))
+        if gameschange == 1:
+            select_tmr = 0
+            pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
+
+            # 落単ビームの発生
+            if attack_tmr % 7 == 0:  # 一定時間ごとにビームを生成
+                start_pos = (random.randint(WIDTH/2-100,WIDTH/2+100), 40)
+                beams.append(AttackBeam((255, 255, 255), start_pos))
+            
+            # ヘルスの現象
+            for bm in range(len(beams)):
+                if beams[bm] is not None:
+                    if hurt.rct.colliderect(beams[bm].rct):
+                        hp.hp -= 1
+
+            kkton.update(screen)
         
-        # ヘルスの現象
-        for bm in range(len(beams)):
-            if beams[bm] is not None:
-                if hurt.rct.colliderect(beams[bm].rct):
-                    hp.hp -= 1
+            key_lst = pg.key.get_pressed()
+            # ハートの移動
+            hurt.update(key_lst, screen)
 
-        kkton.update(screen)
-    
-        key_lst = pg.key.get_pressed()
-        # ハートの移動
-        hurt.update(key_lst, screen)
+            # 落単ビームの更新と削除
+            for beam in beams[:]:
+                beam.update(screen)
+                if not check_bound(beam.rct)[1]:  # 画面外に出たビームを削除
+                    beams.remove(beam)
 
-        # 落単ビームの更新と削除
-        for beam in beams[:]:
-            beam.update(screen)
-            if not check_bound(beam.rct)[1]:  # 画面外に出たビームを削除
-                beams.remove(beam)
-
-        # HPの表示と更新
-        hp.draw(screen)
-        hp.update()
+            # HPの表示と更新
+            hp.draw(screen)
+            hp.update()
+            attack_tmr += 1 
 
         pg.display.update()
-        tmr += 1 
+        # if attack_tmr > 100: # 選択画面に戻る
+        #     gameschange = 0 
         clock.tick(30)
 
 if __name__ == "__main__":
