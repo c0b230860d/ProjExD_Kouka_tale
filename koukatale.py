@@ -117,7 +117,7 @@ class AttackBeam:
 class HealthBar:
     """
     """
-    def __init__(self, x, y, width, max):
+    def __init__(self, x, y, width, max, gpa):
         self.x = x
         self.y = y
         self.width = width
@@ -126,7 +126,7 @@ class HealthBar:
         self.mark = int((self.width - 4) / self.max) # HPバーの1目盛り
 
         self.font = pygame.font.Font(FONT_F, 28)
-        self.label = self.font.render("HP", True, (255, 255, 255))
+        self.label = self.font.render(f"GPA:{gpa:.1f} HP", True, (255, 255, 255))
         self.frame = Rect(self.x + 2 + self.label.get_width(), self.y, self.width, self.label.get_height())
         self.bar = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
         self.value = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
@@ -150,14 +150,14 @@ def main():
     # こうかとんビーム（仮）の初期化
     beams = [] 
 
-    hp =HealthBar(WIDTH/3+100, 9*HEIGHT/10, 100, 96) # maxの値はwidth-4を割り切れる数にする
+    hp =HealthBar(WIDTH/3, 9*HEIGHT/10, 100, 96, random.uniform(0, 4)) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
 
     pygame.mixer.init()
     sound = pygame.mixer.Sound("./sound/Megalovania.mp3")
-    sound.play()
+    sound.play(-1)
 
     while True:
         for event in pg.event.get():
@@ -169,7 +169,7 @@ def main():
         pg.draw.rect(screen,(255,255,255), Rect(WIDTH/3, HEIGHT/3+100, WIDTH/3, HEIGHT/2.5), 10)
 
         # 落単ビームの発生 
-        if tmr % 11 == 0:  # 一定時間ごとにビームを生成
+        if tmr % 7 == 0:  # 一定時間ごとにビームを生成
             start_pos = (random.randint(WIDTH/2-100,WIDTH/2+100), 40)
             beams.append(AttackBeam((255, 255, 255), start_pos))
         
