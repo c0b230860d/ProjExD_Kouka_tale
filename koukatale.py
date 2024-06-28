@@ -86,6 +86,9 @@ class AttackBeam:
     """
     こうかとんのビーム攻撃に関するクラス
     """
+    pygame.mixer.init()
+    voice = pygame.mixer.Sound("./voice/sanzu_beam2.wav")
+
     def __init__(self, color: tuple[int, int, int],start_pos: tuple[int, int]):
         """
         引数に基づき攻撃Surfaceを生成する
@@ -102,7 +105,9 @@ class AttackBeam:
         self.img = pg.Surface((100, 20), pg.SRCALPHA)
         pg.draw.rect(self.img, color, (0, 0, 100, 20))
         self.rct = self.img.get_rect()
-        self.rct.center = start_pos        
+        self.rct.center = start_pos
+
+        # self.voice = pygame.mixer.Sound("./voice/sanzu_beam2.wav")        
 
 
     def update(self, screen: pg.Surface):
@@ -112,7 +117,7 @@ class AttackBeam:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
         self.frct.move_ip(self.vx, self.vy)
-        screen.blit(self.label, self.frct)  
+        screen.blit(self.label, self.frct) 
 
 class HealthBar:
     """
@@ -170,6 +175,7 @@ def main():
 
         # 落単ビームの発生 
         if tmr % 11 == 0:  # 一定時間ごとにビームを生成
+            AttackBeam.voice.play(1)
             start_pos = (random.randint(WIDTH/2-100,WIDTH/2+100), 40)
             beams.append(AttackBeam((255, 255, 255), start_pos))
         
