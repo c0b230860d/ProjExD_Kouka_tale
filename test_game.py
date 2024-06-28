@@ -92,7 +92,7 @@ def attack_kk_sound()->None:
     return 
 
 
-def test_atk_kk(screen):
+def atk_kk(screen):
     # ハートの読み込み
     # 'rotezoom':読み込んだ画像に回転、拡大縮小を書ける
     pygame.mixer.init()
@@ -152,7 +152,8 @@ def main():
     # start画面の表示
     start_game(screen)
     
-    test_atk_kk(screen)
+    # こうかとんとの勝負
+    atk_kk(screen)
     # ゲームのループ
     # while True:
     #     for event in pg.event.get():
