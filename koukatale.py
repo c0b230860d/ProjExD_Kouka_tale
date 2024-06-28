@@ -28,7 +28,7 @@ def check_bound2(obj_rct:pg.Rect) -> tuple[bool, bool]:
     """
     引数:ハートRect
     戻り値:タプル(横方向判定結果, 縦方向判定結果)
-    画面内ならTrue, 画面外ならFalseを返す
+    行動範囲内ならTrue, 行動範囲外ならFalseを返す
     """
     yoko, tate = True, True
     if obj_rct.left < WIDTH/3+10 or (WIDTH/3)+(WIDTH/3)-10 < obj_rct.right:  # 横判定
@@ -36,6 +36,29 @@ def check_bound2(obj_rct:pg.Rect) -> tuple[bool, bool]:
     if obj_rct.top < HEIGHT/3+110 or HEIGHT/3+90 + HEIGHT/2.5 < obj_rct.bottom:  # 縦判定
         tate = False
     return yoko, tate
+
+class Koukaton:
+    """
+    こうかとんに関するクラス
+    """
+    img = pg.transform.rotozoom(
+        pg.image.load("fig/dot_kk_negate.png"),
+        0,1.5
+    )
+
+    def __init__(self):
+        """
+        こうかとん画像Surfaceを生成する
+        """
+        self.img = __class__.img
+        self.rct: pg.Rect = self.img.get_rect()
+        self.rct.center = WIDTH/2, HEIGHT/4
+
+    def update(self, screen: pg.Surface):
+        """
+        こうかとんを表示
+        """
+        screen.blit(self.img, self.rct)
 
 
 class Hurt:
@@ -58,7 +81,7 @@ class Hurt:
         ハート画像Surfaceを生成する
         引数 xy：ハート画像の初期位置座標タプル
         """
-        self.imag = __class__.img
+        self.img = __class__.img
         self.rct: pg.Rect = self.img.get_rect()
         self.rct.center = xy
 
@@ -143,6 +166,8 @@ class HealthBar:
 def main():
     pg.display.set_caption("koukAtale")
     screen = pg.display.set_mode((WIDTH, HEIGHT))   
+    #こうかとんの初期化
+    kkton = Koukaton()
 
     # ハートの初期化
     hurt = Hurt((WIDTH/2, 3* HEIGHT/4 ))
@@ -150,7 +175,7 @@ def main():
     # こうかとんビーム（仮）の初期化
     beams = [] 
 
-    hp =HealthBar(WIDTH/3, 9*HEIGHT/10, 100, 96, random.uniform(0, 4)) # maxの値はwidth-4を割り切れる数にする
+    hp =HealthBar(WIDTH/3, 9*HEIGHT/10-20, 100, 96, random.uniform(0, 4)) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
@@ -178,6 +203,8 @@ def main():
             if beams[bm] is not None:
                 if hurt.rct.colliderect(beams[bm].rct):
                     hp.hp -= 1
+
+        kkton.update(screen)
     
         key_lst = pg.key.get_pressed()
         # ハートの移動
