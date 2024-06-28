@@ -30,10 +30,11 @@ def check_bound2(obj_rct:pg.Rect) -> tuple[bool, bool]:
     戻り値:タプル(横方向判定結果, 縦方向判定結果)
     行動範囲内ならTrue, 行動範囲外ならFalseを返す
     """
+    # WIDTH/2-150, HEIGHT/2-50, 300, 300
     yoko, tate = True, True
-    if obj_rct.left < WIDTH/3+10 or (WIDTH/3)+(WIDTH/3)-10 < obj_rct.right:  # 横判定
+    if obj_rct.left < WIDTH/2-150+5 or WIDTH/2+150-5 < obj_rct.right:  # 横判定
         yoko = False
-    if obj_rct.top < HEIGHT/3+110 or HEIGHT/3+90 + HEIGHT/2.5 < obj_rct.bottom:  # 縦判定
+    if obj_rct.top < HEIGHT/2-50+5 or (HEIGHT/2-50)+300-5 < obj_rct.bottom:  # 縦判定
         tate = False
     return yoko, tate
 
@@ -52,7 +53,7 @@ class Koukaton:
         """
         self.img = __class__.img
         self.rct: pg.Rect = self.img.get_rect()
-        self.rct.center = WIDTH/2, HEIGHT/4
+        self.rct.center = WIDTH/2, HEIGHT/4+30
 
     def update(self, screen: pg.Surface):
         """
@@ -149,7 +150,7 @@ class HealthBar:
         self.mark = int((self.width - 4) / self.max) # HPバーの1目盛り
 
         self.font = pygame.font.Font(FONT_F, 28)
-        self.label = self.font.render(f"GPA:{gpa:.1f} HP", True, (255, 255, 255))
+        self.label = self.font.render(f"GPA:{gpa:.1f}  HP", True, (255, 255, 255))
         self.frame = Rect(self.x + 2 + self.label.get_width(), self.y, self.width, self.label.get_height())
         self.bar = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
         self.value = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
@@ -175,7 +176,7 @@ def main():
     # こうかとんビーム（仮）の初期化
     beams = [] 
 
-    hp =HealthBar(WIDTH/3, 9*HEIGHT/10-20, 100, 96, random.uniform(0, 4)) # maxの値はwidth-4を割り切れる数にする
+    hp =HealthBar(WIDTH/3, 5*HEIGHT/6, 100, 96, random.uniform(1, 4)) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
     tmr = 0  # タイマーの初期値
@@ -191,7 +192,7 @@ def main():
         
         # 背景関連
         screen.fill((0,0,0))
-        pg.draw.rect(screen,(255,255,255), Rect(WIDTH/3, HEIGHT/3+100, WIDTH/3, HEIGHT/2.5), 10)
+        pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
         # 落単ビームの発生 
         if tmr % 7 == 0:  # 一定時間ごとにビームを生成
