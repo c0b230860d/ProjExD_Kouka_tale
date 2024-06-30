@@ -196,7 +196,8 @@ def main():
         
         # 背景関連
         screen.fill((0,0,0))
-        if gameschange == 0:
+
+        if gameschange == 0:  # 選択画面
             attack_tmr = 0
             pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 10)
             kkton.update(screen)
@@ -206,7 +207,7 @@ def main():
                 gameschange = 1
             select_tmr += 1
 
-        if gameschange == 1:
+        if gameschange == 1:  # 攻撃画面
             select_tmr = 0
             pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
