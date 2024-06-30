@@ -160,7 +160,7 @@ class HealthBar:
 
         self.font = pg.font.Font(FONT_F, 28)
         # HPとgpa表示の設定
-        self.label = self.font.render(f"GPA:{gpa:.1f}  HP", True, (255, 255, 255))
+        self.label = self.font.render(f"GPA:{gpa:.1f}  HP ", True, (255, 255, 255))
         # 体力ゲージのバー表示の設定
         self.frame = Rect(self.x + 2 + self.label.get_width(), self.y, self.width, self.label.get_height())
         self.bar = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
@@ -173,6 +173,9 @@ class HealthBar:
         pg.draw.rect(screen, (255, 0, 0), self.bar)
         pg.draw.rect(screen, (255, 255, 0), self.value)
         screen.blit(self.label, (self.x, self.y))
+        # 現在のHPと最大HPの表示
+        hp_text = self.font.render(f" {self.hp}/{self.max}", True, (255, 255, 255))
+        screen.blit(hp_text, (self.x + self.width + 10 + self.label.get_width(), self.y))
 
 class Dialogue:
     """
@@ -223,7 +226,7 @@ def main():
     gpa = random.uniform(1, 4)
     max_hp = int(gpa*25)
     print(gpa, max_hp)
-    hp =HealthBar(WIDTH/3, 5*HEIGHT/6, max_hp+4, max_hp, gpa) # maxの値はwidth-4を割り切れる数にする
+    hp =HealthBar(WIDTH/4, 5*HEIGHT/6, max_hp+4, max_hp, gpa) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
     select_tmr = 0  # 選択画面時のタイマーの初期値
@@ -293,6 +296,10 @@ def main():
             hp.update()
 
             attack_tmr += 1 
+
+            if hp.hp <= 0:
+                print("Game Over")
+                return
 
         pg.display.update()
         clock.tick(30)
