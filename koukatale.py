@@ -344,10 +344,7 @@ def main():
                     if event.key == pg.K_ESCAPE:
                         gameschange = 0
                     elif event.key == pg.K_RETURN:
-                        gameschange = 2
-                        hurt = Hurt((WIDTH/2, HEIGHT/2+100))
-                        for beam in beams[:]:
-                            beams.remove(beam)
+                        gameschange = 2             
 
         # GameOver          
         if hp.hp <= 0:
@@ -387,7 +384,6 @@ def main():
 
 
         elif gameschange == 2:  # 攻撃画面
-            select_tmr = 0
             pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
             # 落単ビームの発生
@@ -414,6 +410,9 @@ def main():
                     beams.remove(beam)
             if attack_tmr > 300: # 選択画面に戻る
                 dialog.update(screen, reset=True)
+                hurt = Hurt((WIDTH/2, HEIGHT/2+100))
+                for beam in beams[:]:
+                    beams.remove(beam)
                 gameschange = 0 
 
             # HPの表示と更新
