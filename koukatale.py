@@ -141,8 +141,16 @@ class AttackBeam:
 
 class HealthBar:
     """
+    体力ゲージに関するクラス
     """
     def __init__(self, x, y, width, max, gpa):
+        """
+        引数1 x：表示するx座標
+        引数2 y：表示するy座標
+        引数3 width：体力ゲージの幅
+        引数4 max：体力の最大値
+        引数5 gpa：表示するgpaの値
+        """
         self.x = x
         self.y = y
         self.width = width
@@ -150,8 +158,10 @@ class HealthBar:
         self.hp = max # HP
         self.mark = int((self.width - 4) / self.max) # HPバーの1目盛り
 
-        self.font = pygame.font.Font(FONT_F, 28)
+        self.font = pg.font.Font(FONT_F, 28)
+        # HPとgpa表示の設定
         self.label = self.font.render(f"GPA:{gpa:.1f}  HP", True, (255, 255, 255))
+        # 体力ゲージのバー表示の設定
         self.frame = Rect(self.x + 2 + self.label.get_width(), self.y, self.width, self.label.get_height())
         self.bar = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
         self.value = Rect(self.x + 4 + self.label.get_width(), self.y + 2, self.width - 4, self.label.get_height() - 4)
@@ -160,8 +170,8 @@ class HealthBar:
         self.value.width = self.hp * self.mark
 
     def draw(self, screen: pg.Surface):
-        pygame.draw.rect(screen, (255, 0, 0), self.bar)
-        pygame.draw.rect(screen, (255, 255, 0), self.value)
+        pg.draw.rect(screen, (255, 0, 0), self.bar)
+        pg.draw.rect(screen, (255, 255, 0), self.value)
         screen.blit(self.label, (self.x, self.y))
 
 class Dialogue:
@@ -201,7 +211,7 @@ def main():
     kkton = Koukaton()
 
     # ハートの初期化
-    hurt = Hurt((WIDTH/2, 3* HEIGHT/4 ))
+    hurt = Hurt((WIDTH/2, HEIGHT/2+100 ))
 
     # こうかとんビーム（仮）の初期化
     beams = [] 
@@ -209,7 +219,11 @@ def main():
     # セリフに関する初期化
     dialog = Dialogue()
 
-    hp =HealthBar(WIDTH/3, 5*HEIGHT/6, 100, 96, random.uniform(1, 4)) # maxの値はwidth-4を割り切れる数にする
+    # ヘルスバーに関する初期化
+    gpa = random.uniform(1, 4)
+    max_hp = int(gpa*25)
+    print(gpa, max_hp)
+    hp =HealthBar(WIDTH/3, 5*HEIGHT/6, max_hp+4, max_hp, gpa) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
     select_tmr = 0  # 選択画面時のタイマーの初期値
@@ -238,6 +252,7 @@ def main():
             hp.update()
             if select_tmr > 100:
                 gameschange = 1
+                hurt = Hurt((WIDTH/2, HEIGHT/2+100 ))
                 for beam in beams[:]:
                     beams.remove(beam)
                 
@@ -248,7 +263,7 @@ def main():
             pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
             # 落単ビームの発生
-            if attack_tmr % 7 == 0:  # 一定時間ごとにビームを生成
+            if attack_tmr % 10 == 0:  # 一定時間ごとにビームを生成
                 start_pos = (random.randint(WIDTH/2-100,WIDTH/2+100), 40)
                 beams.append(AttackBeam((255, 255, 255), start_pos))
             
@@ -276,6 +291,7 @@ def main():
             # HPの表示と更新
             hp.draw(screen)
             hp.update()
+
             attack_tmr += 1 
 
         pg.display.update()
