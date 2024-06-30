@@ -159,10 +159,33 @@ class HealthBar:
     def update(self):
         self.value.width = self.hp * self.mark
 
-    def draw(self, screen):
+    def draw(self, screen: pg.Surface):
         pygame.draw.rect(screen, (255, 0, 0), self.bar)
         pygame.draw.rect(screen, (255, 255, 0), self.value)
         screen.blit(self.label, (self.x, self.y))
+
+class Dialogue:
+    """
+    選択画面時のセリフに関するクラス
+    """
+    def __init__(self) -> None:
+        """
+        引数なし
+        """
+        self.font = pg.font.Font(FONT, 35)
+        self.txt = "* 学生たちに夢を届けてくれそうだ。"
+        self.txt_len = len(self.txt)
+        self.index = 0
+
+    def update(self, screen: pg.Surface):
+        """
+        引数 screen：画面Surface
+        """
+        if self.index < self.txt_len:
+            self.index += 1
+
+        rend_txt = self.font.render(self.txt[:self.index], True, (255, 255, 255))
+        screen.blit(rend_txt, (40, HEIGHT/2-20))
 
 
 def main():
@@ -180,17 +203,14 @@ def main():
     # こうかとんビーム（仮）の初期化
     beams = [] 
 
+    # セリフに関する初期化
+    dialog = Dialogue()
+
     hp =HealthBar(WIDTH/3, 5*HEIGHT/6, 100, 96, random.uniform(1, 4)) # maxの値はwidth-4を割り切れる数にする
 
     clock = pg.time.Clock()  # time
     select_tmr = 0  # 選択画面時のタイマーの初期値
     attack_tmr = 0  # 攻撃中のタイマーの初期値
-
-    # 文字順番表示設定
-    font = pg.font.Font(FONT, 35)
-    txt = "* 学生たちに夢を届けてくれそうだ。"
-    txt_len = len(txt)
-    index = 0
 
     pygame.mixer.init()
     sound = pg.mixer.Sound("./sound/Megalovania.mp3")
@@ -209,11 +229,7 @@ def main():
             pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 10)
             kkton.update(screen)
 
-            if index < txt_len:
-                index += 1
-            rend_txt = font.render(txt[:index], True, (255, 255, 255))
-            screen.blit(rend_txt, (40, HEIGHT/2-20))
-            
+            dialog.update(screen)
 
             hp.draw(screen)
             hp.update()
