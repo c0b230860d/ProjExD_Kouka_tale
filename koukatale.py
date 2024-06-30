@@ -119,7 +119,7 @@ class AttackBeam:
         """
         self.vx, self.vy = 0, +10
 
-        self.font = pygame.font.Font(FONT_F, 18)
+        self.font = pygame.font.Font(FONT, 18)
         self.label = self.font.render("落単", False, (50, 50, 50))
         self.frct = self.label.get_rect()
         self.frct.center = start_pos
@@ -143,7 +143,7 @@ class HealthBar:
     """
     体力ゲージに関するクラス
     """
-    def __init__(self, x, y, width, max, gpa):
+    def __init__(self, x: int, y: int, width: int, max: int, gpa: float):
         """
         引数1 x：表示するx座標
         引数2 y：表示するy座標
@@ -186,11 +186,11 @@ class Dialogue:
         引数なし
         """
         self.font = pg.font.Font(FONT, 35)
-        self.txt = "* バッグ中に嫌なものがうごめいている。"
+        self.txt = "＊ バッグ中に嫌なものがうごめいている。"
         self.txt_len = len(self.txt)
         self.index = 0
 
-    def update(self, screen: pg.Surface, reset=None):
+    def update(self, screen: pg.Surface,reset=None):
         """
         引数1 screen：画面Surface
         引数2 reset：画面切り替え時に戻す
@@ -202,6 +202,60 @@ class Dialogue:
 
         rend_txt = self.font.render(self.txt[:self.index], True, (255, 255, 255))
         screen.blit(rend_txt, (40, HEIGHT/2-20))
+
+
+class Choice:
+    """
+    選択肢に関するクラス
+    """
+    def __init__(self, ls: list[str], x: int, y: int):
+        """
+        引数1 ls：表示する選択肢のリスト
+        引数2 x：表示するx座標
+        引数3 y：表示するy座標
+        """
+        self.choice_ls = ls
+        self.x = x
+        self.y = y
+        
+        self.font = pg.font.Font(FONT_F, 40)
+        self.index = 0  # 選択しているものの識別用 
+
+        self.whle = 50  # 四角形との間の距離 
+        self.width = (WIDTH - (self.whle*(len(ls)-1)) - 20)/len(ls)
+        self.height = 70
+        
+    def draw(self, screen: pg.Surface):
+        """
+        選択肢を表示する
+        引数1 screen：画面Surface
+        """
+        for i, choice in enumerate(self.choice_ls):
+            rect = pg.Rect(
+                self.x + (self.width + self.whle) * i, # 四角形を描く開始座標
+                self.y, 
+                self.width, 
+                self.height
+                )
+            if i == self.index:
+                color = (255, 255, 0)
+            else:
+                color = (248, 138, 52)
+            pg.draw.rect(screen, color, Rect(rect), 5)
+            txt = self.font.render(choice, True, color)
+            txt_rect = txt.get_rect()
+            txt_rect.center = rect.center
+            screen.blit(txt, txt_rect)
+
+    def update(self, key, atk = False):
+        """
+        キー入力による選択肢の変更
+        引数1 key：押されたキーの識別
+        """
+        if key == pg.K_LEFT:
+            self.index = (self.index - 1) % len(self.choice_ls)  # 右端から左端へ
+        elif key == pg.K_RIGHT:
+            self.index = (self.index + 1) % len(self.choice_ls)  # 左端から右端へ
 
 
 def main():
@@ -224,9 +278,12 @@ def main():
 
     # ヘルスバーに関する初期化
     gpa = random.uniform(1, 4)
-    max_hp = int(gpa*25)
-    print(gpa, max_hp)
+    max_hp = int(gpa*20)
     hp =HealthBar(WIDTH/4, 5*HEIGHT/6, max_hp+4, max_hp, gpa) # maxの値はwidth-4を割り切れる数にする
+
+    # 選択肢の初期化
+    choice_ls = ["たたかう", "こうどう", "アイテム", "みのがす"]
+    choice = Choice(choice_ls, 10, HEIGHT - 80)
 
     clock = pg.time.Clock()  # time
     select_tmr = 0  # 選択画面時のタイマーの初期値
@@ -240,6 +297,15 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
+            elif event.type == pg.KEYDOWN:
+                if gameschange == 0:
+                    choice.update(event.key)
+                    if event.key == pg.K_RETURN:
+                        if choice.index == 0:
+                            gameschange = 1
+                            hurt = Hurt((WIDTH/2, HEIGHT/2+100))
+                            for beam in beams[:]:
+                                beams.remove(beam)
         
         # 背景関連
         screen.fill((0,0,0))
@@ -253,12 +319,9 @@ def main():
 
             hp.draw(screen)
             hp.update()
-            if select_tmr > 100:
-                gameschange = 1
-                hurt = Hurt((WIDTH/2, HEIGHT/2+100 ))
-                for beam in beams[:]:
-                    beams.remove(beam)
-                
+
+            choice.draw(screen)
+
             select_tmr += 1
 
         if gameschange == 1:  # 攻撃画面
@@ -266,7 +329,7 @@ def main():
             pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
             # 落単ビームの発生
-            if attack_tmr % 10 == 0:  # 一定時間ごとにビームを生成
+            if attack_tmr % 9 == 0:  # 一定時間ごとにビームを生成
                 start_pos = (random.randint(WIDTH/2-100,WIDTH/2+100), 40)
                 beams.append(AttackBeam((255, 255, 255), start_pos))
             
@@ -288,13 +351,16 @@ def main():
                 if not check_bound(beam.rct)[1]:  # 画面外に出たビームを削除
                     beams.remove(beam)
             if attack_tmr > 300: # 選択画面に戻る
-                dialog.update(screen, True)
+                dialog.update(screen, reset=True)
                 gameschange = 0 
 
             # HPの表示と更新
             hp.draw(screen)
             hp.update()
 
+            # 選択肢の表示
+            choice.draw(screen)
+            
             attack_tmr += 1 
 
             if hp.hp <= 0:
