@@ -109,7 +109,7 @@ class Hurt:
 
 class AttackBeam:
     """
-    こうかとんのビーム攻撃に関するクラス
+    こうかとんの落単ビーム攻撃に関するクラス
     """
     def __init__(self, color: tuple[int, int, int],start_pos: tuple[int, int]):
         """
@@ -132,7 +132,7 @@ class AttackBeam:
 
     def update(self, screen: pg.Surface):
         """
-
+        引数1 screen：画面Surface
         """
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
@@ -173,16 +173,19 @@ class Dialogue:
         引数なし
         """
         self.font = pg.font.Font(FONT, 35)
-        self.txt = "* 学生たちに夢を届けてくれそうだ。"
+        self.txt = "* バッグ中に嫌なものがうごめいている。"
         self.txt_len = len(self.txt)
         self.index = 0
 
-    def update(self, screen: pg.Surface):
+    def update(self, screen: pg.Surface, reset=None):
         """
-        引数 screen：画面Surface
+        引数1 screen：画面Surface
+        引数2 reset：画面切り替え時に戻す
         """
         if self.index < self.txt_len:
             self.index += 1
+        if reset:
+            self.index = 0
 
         rend_txt = self.font.render(self.txt[:self.index], True, (255, 255, 255))
         screen.blit(rend_txt, (40, HEIGHT/2-20))
@@ -226,7 +229,7 @@ def main():
 
         if gameschange == 0:  # 選択画面
             attack_tmr = 0
-            pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 10)
+            pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 5)
             kkton.update(screen)
 
             dialog.update(screen)
@@ -235,6 +238,9 @@ def main():
             hp.update()
             if select_tmr > 100:
                 gameschange = 1
+                for beam in beams[:]:
+                    beams.remove(beam)
+                
             select_tmr += 1
 
         if gameschange == 1:  # 攻撃画面
@@ -263,6 +269,9 @@ def main():
                 beam.update(screen)
                 if not check_bound(beam.rct)[1]:  # 画面外に出たビームを削除
                     beams.remove(beam)
+            if attack_tmr > 300: # 選択画面に戻る
+                dialog.update(screen, True)
+                gameschange = 0 
 
             # HPの表示と更新
             hp.draw(screen)
@@ -270,8 +279,6 @@ def main():
             attack_tmr += 1 
 
         pg.display.update()
-        # if attack_tmr > 100: # 選択画面に戻る
-        #     gameschange = 0 
         clock.tick(30)
 
 if __name__ == "__main__":
