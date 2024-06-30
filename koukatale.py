@@ -298,15 +298,20 @@ def main():
             if event.type == pg.QUIT:
                 return
             elif event.type == pg.KEYDOWN:
-                if gameschange == 0:
+                if gameschange == 0:  # 選択画面なら
                     choice.update(event.key)
-                    if event.key == pg.K_RETURN:
-                        if choice.index == 0:
-                            gameschange = 1
+                    if event.key == pg.K_RETURN:  # エンターキーを押されたら
+                        if choice.index == 0:  # こうげきを選択していたら
+                            gameschange = 2
                             hurt = Hurt((WIDTH/2, HEIGHT/2+100))
                             for beam in beams[:]:
                                 beams.remove(beam)
-        
+                        elif choice.index == 1:  # こうどうを選択していたら
+                            pass
+                        elif choice.index == 2:  # アイテムを選択していたら
+                            pass
+                        elif choice.index == 3:  # みのがすを選択していたら
+                            pass
         # 背景関連
         screen.fill((0,0,0))
 
@@ -324,7 +329,11 @@ def main():
 
             select_tmr += 1
 
-        if gameschange == 1:  # 攻撃画面
+        elif gameschange == 1:
+            pass
+
+
+        elif gameschange == 2:  # 攻撃画面
             select_tmr = 0
             pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
