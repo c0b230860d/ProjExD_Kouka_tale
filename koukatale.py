@@ -225,7 +225,7 @@ class Choice:
         self.width = (WIDTH - (self.whle*(len(ls)-1)) - 20)/len(ls)
         self.height = 70
         
-    def draw(self, screen: pg.Surface):
+    def draw(self, screen: pg.Surface, atk = False):
         """
         選択肢を表示する
         引数1 screen：画面Surface
@@ -237,7 +237,9 @@ class Choice:
                 self.width, 
                 self.height
                 )
-            if i == self.index:
+            if atk:
+                color = (248, 138, 52)
+            elif i == self.index:
                 color = (255, 255, 0)
             else:
                 color = (248, 138, 52)
@@ -247,7 +249,7 @@ class Choice:
             txt_rect.center = rect.center
             screen.blit(txt, txt_rect)
 
-    def update(self, key, atk = False):
+    def update(self, key):
         """
         キー入力による選択肢の変更
         引数1 key：押されたキーの識別
@@ -256,6 +258,32 @@ class Choice:
             self.index = (self.index - 1) % len(self.choice_ls)  # 右端から左端へ
         elif key == pg.K_RIGHT:
             self.index = (self.index + 1) % len(self.choice_ls)  # 左端から右端へ
+
+class AfterChoice:
+    """
+    選択肢を選んだあとの画面に関するクラス
+    """
+    def __init__(self, ls: list[str]):
+        """
+        引数1 ls：選択肢のリスト
+        引数2 x：座標
+        引数3 y：座標
+        """
+        self.x = 40
+        self.y = HEIGHT/2-20
+
+        self.font = pg.font.Font(FONT, 35)
+        self.txt_ls = ls
+
+    def draw(self, screen: pg.Surface):
+        for i, choice in enumerate(self.txt_ls):
+            rend_txt = self.font.render(choice, True, (255, 255, 255))
+            screen.blit(rend_txt, (self.x, self.y))
+            if i % 2 == 0:
+                self.x = WIDTH/2 + 40
+            else:
+                self.x = 40
+                self.y += 60
 
 
 def main():
@@ -285,6 +313,7 @@ def main():
     choice_ls = ["たたかう", "こうどう", "アイテム", "みのがす"]
     choice = Choice(choice_ls, 10, HEIGHT - 80)
 
+
     clock = pg.time.Clock()  # time
     select_tmr = 0  # 選択画面時のタイマーの初期値
     attack_tmr = 0  # 攻撃中のタイマーの初期値
@@ -298,20 +327,33 @@ def main():
             if event.type == pg.QUIT:
                 return
             elif event.type == pg.KEYDOWN:
-                if gameschange == 0:  # 選択画面なら
+                # 選択画面なら
+                if gameschange == 0:  
                     choice.update(event.key)
                     if event.key == pg.K_RETURN:  # エンターキーを押されたら
                         if choice.index == 0:  # こうげきを選択していたら
-                            gameschange = 2
-                            hurt = Hurt((WIDTH/2, HEIGHT/2+100))
-                            for beam in beams[:]:
-                                beams.remove(beam)
+                            gameschange = 1
                         elif choice.index == 1:  # こうどうを選択していたら
                             pass
                         elif choice.index == 2:  # アイテムを選択していたら
                             pass
                         elif choice.index == 3:  # みのがすを選択していたら
                             pass
+                # 攻撃相手選択画面なら
+                elif gameschange == 1:      
+                    if event.key == pg.K_ESCAPE:
+                        gameschange = 0
+                    elif event.key == pg.K_RETURN:
+                        gameschange = 2
+                        hurt = Hurt((WIDTH/2, HEIGHT/2+100))
+                        for beam in beams[:]:
+                            beams.remove(beam)
+
+        # GameOver          
+        if hp.hp <= 0:
+            print("Game Over")
+            return
+        
         # 背景関連
         screen.fill((0,0,0))
 
@@ -329,8 +371,19 @@ def main():
 
             select_tmr += 1
 
-        elif gameschange == 1:
-            pass
+        elif gameschange == 1:  # こうげきを選択した場合
+            pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 5)
+
+            # 選択肢後の画面に関する初期化
+            afterchoice = AfterChoice(["＊　こうかとん"])   
+            kkton.update(screen)
+
+            afterchoice.draw(screen)
+
+            hp.draw(screen)
+            hp.update()
+
+            choice.draw(screen)
 
 
         elif gameschange == 2:  # 攻撃画面
@@ -368,13 +421,9 @@ def main():
             hp.update()
 
             # 選択肢の表示
-            choice.draw(screen)
+            choice.draw(screen, True)
             
             attack_tmr += 1 
-
-            if hp.hp <= 0:
-                print("Game Over")
-                return
 
         pg.display.update()
         clock.tick(30)
