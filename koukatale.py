@@ -8,6 +8,7 @@ import random
 
 # グローバル変数
 WIDTH, HEIGHT = 1024, 768 # ディスプレイサイズ
+FONT = "font/JF-Dot-MPlusS10.ttf"
 FONT_F = "font/JF-Dot-MPlusS10B.ttf"
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -185,8 +186,14 @@ def main():
     select_tmr = 0  # 選択画面時のタイマーの初期値
     attack_tmr = 0  # 攻撃中のタイマーの初期値
 
+    # 文字順番表示設定
+    font = pg.font.Font(FONT, 35)
+    txt = "* 学生たちに夢を届けてくれそうだ。"
+    txt_len = len(txt)
+    index = 0
+
     pygame.mixer.init()
-    sound = pygame.mixer.Sound("./sound/Megalovania.mp3")
+    sound = pg.mixer.Sound("./sound/Megalovania.mp3")
     sound.play(-1)
 
     while True:
@@ -201,6 +208,13 @@ def main():
             attack_tmr = 0
             pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 10)
             kkton.update(screen)
+
+            if index < txt_len:
+                index += 1
+            rend_txt = font.render(txt[:index], True, (255, 255, 255))
+            screen.blit(rend_txt, (40, HEIGHT/2-20))
+            
+
             hp.draw(screen)
             hp.update()
             if select_tmr > 100:
