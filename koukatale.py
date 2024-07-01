@@ -13,7 +13,7 @@ FONT_F = "font/JF-Dot-MPlusS10B.ttf"
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
+def check_bound1(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
     オブジェクトが画面内or画面外を判定し，真理値タプルを返す関数
     """
@@ -38,6 +38,18 @@ def check_bound2(obj_rct:pg.Rect) -> tuple[bool, bool]:
     if obj_rct.top < HEIGHT/2-50+5 or (HEIGHT/2-50)+300-5 < obj_rct.bottom:  # 縦判定
         tate = False
     return yoko, tate
+
+def check_bound(obj_rct:pg.Rect, left:int, right:int, top:int, bottom:int) -> tuple[bool, bool]:
+    """
+    与えられた引数より外側にあるか否かを判断しそれに応じたTrue or Falseを返す
+    """
+    yoko, tate = True, True
+    if obj_rct.left < left or right < obj_rct.right:
+        yoko = False
+    if obj_rct.top < top or bottom < obj_rct.bottom:
+        tate = False
+    return yoko, tate
+    
 
 class Koukaton:
     """
@@ -186,7 +198,7 @@ class Dialogue:
         引数なし
         """
         self.font = pg.font.Font(FONT, 35)
-        self.txt = "＊ バッグ中に嫌なものがうごめいている。"
+        self.txt = "＊ こうかとんがあらわれた！"
         self.txt_len = len(self.txt)
         self.index = 0
 
@@ -266,8 +278,6 @@ class AfterChoice:
     def __init__(self, ls: list[str]):
         """
         引数1 ls：選択肢のリスト
-        引数2 x：座標
-        引数3 y：座標
         """
         self.x = 40
         self.y = HEIGHT/2-20
@@ -285,6 +295,40 @@ class AfterChoice:
                 self.x = 40
                 self.y += 60
 
+
+class AttackBar:
+    """
+    敵を攻撃するアタックバーに関する関数
+    """
+    img = pg.transform.rotozoom(
+        pg.image.load("fig/Attack_Bar.png"),
+        0,1.8
+    )
+    def __init__(self):
+        # アタックの確率バーの描画
+        self.vx, self.vy = +30, 0
+        self.rimg = pg.Surface((10, 300), pg.SRCALPHA)
+        pg.draw.rect(self.rimg, (255, 255, 255), (0, 0, 20, 300))
+        self.rrct = self.rimg.get_rect()
+        self.rrct.center = (20, HEIGHT/2+100)
+
+        # アタックバーの描画
+        self.img = __class__.img
+        self.rct: pg.Rect = self.img.get_rect()
+        self.rct.center = WIDTH/2, HEIGHT/2+100
+
+    def update(self, screen: pg.Surface):
+        """
+        アタックバーを表示
+        """
+        screen.blit(self.img, self.rct)
+
+        yoko, tate = check_bound(self.rrct, 15, WIDTH-15, HEIGHT/2-55, HEIGHT/2+255)
+        if not yoko:
+            self.vx *= -1
+        self.rrct.move_ip(self.vx, self.vy)
+        screen.blit(self.rimg, self.rrct)
+    
 
 def main():
     pg.display.set_caption("koukAtale")
@@ -313,6 +357,8 @@ def main():
     choice_ls = ["たたかう", "こうどう", "アイテム", "みのがす"]
     choice = Choice(choice_ls, 10, HEIGHT - 80)
 
+    # アタックバーの初期化
+    attack_bar = AttackBar()
 
     clock = pg.time.Clock()  # time
     select_tmr = 0  # 選択画面時のタイマーの初期値
@@ -344,7 +390,11 @@ def main():
                     if event.key == pg.K_ESCAPE:
                         gameschange = 0
                     elif event.key == pg.K_RETURN:
-                        gameschange = 2             
+                        gameschange = 2
+                # アタックバーなら
+                elif gameschange == 2:
+                    if event.key == pg.K_RETURN:
+                        gameschange = 3             
 
         # GameOver          
         if hp.hp <= 0:
@@ -382,8 +432,19 @@ def main():
 
             choice.draw(screen)
 
+        elif gameschange == 2:
+            pg.draw.rect(screen,(255,255,255), Rect(10, HEIGHT/2-50, WIDTH-20, 300), 5)
+            kkton.update(screen)
 
-        elif gameschange == 2:  # 攻撃画面
+            attack_bar.update(screen)
+
+            hp.draw(screen)
+            hp.update()
+
+            choice.draw(screen)
+            pass
+
+        elif gameschange == 3:  # 攻撃画面
             pg.draw.rect(screen,(255,255,255), Rect(WIDTH/2-150, HEIGHT/2-50, 300, 300), 5)
 
             # 落単ビームの発生
@@ -406,7 +467,7 @@ def main():
             # 落単ビームの更新と削除
             for beam in beams[:]:
                 beam.update(screen)
-                if not check_bound(beam.rct)[1]:  # 画面外に出たビームを削除
+                if not check_bound1(beam.rct)[1]:  # 画面外に出たビームを削除
                     beams.remove(beam)
             if attack_tmr > 300: # 選択画面に戻る
                 dialog.update(screen, reset=True)
